@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Handy Service - SHS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body>
+    <div id="root">
+        <!-- This file is meant to be used in a React environment and does not function standalone as HTML -->
+        <!-- Please use this code inside a React project (e.g., using Vite, Next.js, or Create React App) -->
+        <pre>
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+const translations = {
+  en: {
+    title: "Start Handy Service - SHS",
+    book: "Book a Service",
+    register: "Register as Worker",
+    viewBookings: "View Bookings",
+    selectService: "Select Service",
+    enterLocation: "Enter your location",
+    confirmBooking: "Confirm Booking",
+    confirmed: "Booking Confirmed",
+    fullName: "Full Name",
+    skill: "Skill (e.g., Plumbing)",
+    registerButton: "Register",
+    noBookings: "No bookings yet.",
+    selectLang: "Select Language"
+  },
+  so: {
+    title: "Bilaaw Adeegga Handy - SHS",
+    book: "Dalbo Adeeg",
+    register: "Isdiiwaangeli Shaqaale ahaan",
+    viewBookings: "Fiiri Ballamaha",
+    selectService: "Dooro Adeeg",
+    enterLocation: "Geli goobta aad joogto",
+    confirmBooking: "Xaqiiji Ballanta",
+    confirmed: "Ballan waa la xaqiijiyay",
+    fullName: "Magaca oo Dhan",
+    skill: "Xirfad (tusaale: Tuubiste)",
+    registerButton: "Isdiiwaangeli",
+    noBookings: "Wali ballamo ma jiraan.",
+    selectLang: "Dooro Luuqad"
+  },
+  ar: {
+    title: "ابدأ خدمة هاندي - SHS",
+    book: "احجز خدمة",
+    register: "تسجيل كعامل",
+    viewBookings: "عرض الحجوزات",
+    selectService: "اختر الخدمة",
+    enterLocation: "أدخل الموقع",
+    confirmBooking: "تأكيد الحجز",
+    confirmed: "تم تأكيد الحجز",
+    fullName: "الاسم الكامل",
+    skill: "المهارة (مثال: سباكة)",
+    registerButton: "تسجيل",
+    noBookings: "لا توجد حجوزات بعد.",
+    selectLang: "اختر اللغة"
+  }
+};
+
+export default function HandyApp() {
+  const [lang, setLang] = useState("");
+  const [service, setService] = useState("");
+  const [location, setLocation] = useState("");
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [workerList, setWorkerList] = useState([]);
+  const [worker, setWorker] = useState({ name: "", skill: "" });
+  const [confirmation, setConfirmation] = useState(null);
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem("language");
+    if (savedLang) setLang(savedLang);
+  }, []);
+
+  const handleSetLang = (l) => {
+    localStorage.setItem("language", l);
+    setLang(l);
+  };
+
+  const t = translations[lang] || translations.en;
+  const isRTL = lang === "ar";
+
+  const services = ["Cleaning", "Plumbing", "Electrical", "Furniture Assembly"];
+
+  const handleBooking = () => {
+    setConfirmation({ service, location, date: selectedDate.toDateString() });
+  };
+
+  const registerWorker = () => {
+    if (worker.name && worker.skill) {
+      setWorkerList([...workerList, worker]);
+      setWorker({ name: "", skill: "" });
+    }
+  };
+
+  if (!lang) {
+    return (
+      <main className="p-6 max-w-xl mx-auto">
+        <h2 className="text-xl font-bold mb-4">Select Language / Doorashada Luuqadda / اختر اللغة</h2>
+        <div className="flex gap-4">
+          <Button onClick={() => handleSetLang("en")}>English</Button>
+          <Button onClick={() => handleSetLang("so")} className="mx-2">Somali</Button>
+          <Button onClick={() => handleSetLang("ar")}>Arabic</Button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main dir={isRTL ? "rtl" : "ltr"} className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4 text-center">{t.title}</h1>
+      <Tabs defaultValue="book" className="w-full">
+        <TabsList>
+          <TabsTrigger value="book">{t.book}</TabsTrigger>
+          <TabsTrigger value="register">{t.register}</TabsTrigger>
+          <TabsTrigger value="jobs">{t.viewBookings}</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="book">
+          <Card className="mt-4">
+            <CardContent className="space-y-4 py-6">
+              <select onChange={(e) => setService(e.target.value)} className="w-full p-2 border rounded">
+                <option value="">{t.selectService}</option>
+                {services.map((s, i) => (
+                  <option key={i} value={s}>{s}</option>
+                ))}
+              </select>
+              <Input
+                placeholder={t.enterLocation}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+              <Calendar selected={selectedDate} onSelect={setSelectedDate} />
+              <Button onClick={handleBooking}>{t.confirmBooking}</Button>
+              {confirmation && (
+                <div className="p-4 bg-green-100 rounded">
+                  {t.confirmed}: {confirmation.service} at {confirmation.location} on {confirmation.date}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="register">
+          <Card className="mt-4">
+            <CardContent className="space-y-4 py-6">
+              <Input
+                placeholder={t.fullName}
+                value={worker.name}
+                onChange={(e) => setWorker({ ...worker, name: e.target.value })}
+              />
+              <Input
+                placeholder={t.skill}
+                value={worker.skill}
+                onChange={(e) => setWorker({ ...worker, skill: e.target.value })}
+              />
+              <Button onClick={registerWorker}>{t.registerButton}</Button>
+              <ul className="pt-4 list-disc pl-6">
+                {workerList.map((w, i) => (
+                  <li key={i}>{w.name} - {w.skill}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="jobs">
+          <Card className="mt-4">
+            <CardContent className="space-y-2 py-6">
+              {confirmation ? (
+                <div className="p-4 bg-blue-100 rounded">
+                  {t.confirmed}: {confirmation.service} at {confirmation.location} on {confirmation.date}
+                </div>
+              ) : (
+                <div>{t.noBookings}</div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </main>
+  );
+}
+</pre>
+    </div>
+</body>
+</html>
